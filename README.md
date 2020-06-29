@@ -1,29 +1,10 @@
-## Project: Build a Traffic Sign Recognition Program
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
+# Self-Driving Car Engineer Nanodegree
 
-Overview
----
-In this project, you will use what you've learned about deep neural networks and convolutional neural networks to classify traffic signs. You will train and validate a model so it can classify traffic sign images using the [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). After the model is trained, you will then try out your model on images of German traffic signs that you find on the web.
+## Project: **Build a Traffic Sign Recognition Program** 
+![](img/webdata.png)  
 
-We have included an Ipython notebook that contains further instructions 
-and starter code. Be sure to download the [Ipython notebook](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb). 
+**Desciption:** This projects aims to create classifier to detect traffic signs.  
 
-We also want you to create a detailed writeup of the project. Check out the [writeup template](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup. The writeup can be either a markdown file or a pdf document.
-
-To meet specifications, the project will require submitting three files: 
-* the Ipython notebook with the code
-* the code exported as an html file
-* a writeup report either as a markdown or pdf file 
-
-Creating a Great Writeup
----
-A great writeup should include the [rubric points](https://review.udacity.com/#!/rubrics/481/view) as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
-
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
-
-The Project
 ---
 The goals / steps of this project are the following:
 * Load the data set
@@ -33,26 +14,109 @@ The goals / steps of this project are the following:
 * Analyze the softmax probabilities of the new images
 * Summarize the results with a written report
 
+---
 ### Dependencies
-This lab requires:
+This project requires Python 3.5 and the following Python libraries must be imported:
 
-* [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit)
+- OpenCV
+- NumPy
+- scikit-learn
+- TensorFlow
+- Matplotlib
+- csv
+- PIL
+- pickle
+- math
+   
+---
+## The Pipeline  
 
-The lab environment can be created with CarND Term1 Starter Kit. Click [here](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) for the details.
+### Step1: Loading The Raw Data   
+The raw data have been provided in pickled format.  
+Thus, raw data was imported via pickle.  
 
-### Dataset and Repository
 
-1. Download the data set. The classroom has a link to the data set in the "Project Instructions" content. This is a pickled dataset in which we've already resized the images to 32x32. It contains a training, validation and test set.
-2. Clone the project, which contains the Ipython notebook and the writeup template.
-```sh
-git clone https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project
-cd CarND-Traffic-Sign-Classifier-Project
-jupyter notebook Traffic_Sign_Classifier.ipynb
-```
+### Step2: Dataset Exploration  
+- The image shape = (32, 32, 3) 
+- Number of classes (labels) = 43
+- Number of training images = 34799
+- Number of testing images = 12630
 
-### Requirements for Submission
-Follow the instructions in the `Traffic_Sign_Classifier.ipynb` notebook and write the project report using the writeup template as a guide, `writeup_template.md`. Submit the project code and writeup document.
+![](img/examples.png)  
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+Also, image class distrubitons were plotted as follows:  
+
+![](img/dists.png)  
+
+The variation in the classes for the datasets (trainig, validation and test) seem similar to each other.  
+
+
+### Step3: Pre-Processing the Image
+This step is composed of **3 sub-steps** as follows:  
+- Creating the Pipeline for Initial Processing (For Better Features)  
+- Creating the Pipeline for Augmentation (For Increasing Amount of the Data)  
+- Normalization and Grayscale Conversion
+
+**For the initial procesing:**  
+* Histogram equalization is applied to improce the contrast of the image  
+* The contrast and the sharpness are changed to make the features more obvious  
+
+**For the augmentation:**  
+* Image is translated and rotated  
+* Shearing is applied  
+
+And finally, the image is converted into grayscale and normalized by using the following formula:  
+![](img/norm.png)  
+
+Example pre-processing results are shown below:  
+![](img/prepro.png)  
+
+**Finding:** I tried several parameters in the pre-processing step and this took a lot of time!  
+My very general finding is that adding noise to the images can mislead the training.  
+Thus, I kept the transformations in a minor level.
+
+After all images are processed, the datasets are shuffled in order to elimate the influence of the order of the data!  
+
+
+### Step4: The Model
+The LeNet architecture is used and it's schema is shown below:  
+![](img/lenet5.png)  
+
+I modified the convolutional layers because original architecture of the LeNet5 can not exceed 86% in the validation accuracy.  
+Thus, I modified last 2 fully connected layers.  
+In the layer-4, I set the input as 200 and set the output as 129 which is 3 times of the classes.  
+Naturally, in the layer-5, I set the input as 129 and the output as 43 which is the number of clasess.  
+By doing so, I exceed the 93% (mimimum validation accuracy for this project) after the 7th epoch.
+
+The learning rate is set 0.0008  
+The optimizer is AdamOptimizer (from tf.train.AdamOptimizer)  
+The EPOCHS is set 70   
+The BATCH SIZE is set 100  
+
+#### Accuracy
+* Training Accuracy: 0.989  
+* Validation Accuracy: 0.967  
+* Testing Accuracy: 0.952  
+
+For the given parameters and the architecture above, the validation accuracy converged around 96% as shown below:  
+![](img/valacc.png)  
+
+I found 5 images from the web, and the testing accuracy is 100% for those images (shown below):  
+![](img/webdata.png)  
+
+Later, the top 3 predictions were calculated for the images as shown below:  
+![](img/toppred.png)  
+
+Finally, the softmax probabilities were calculated for the images as shown below:  
+![](img/softmax.png)  
+
+### Conclusion
+With a heuristic approach, I tried many parameters in order to increase the validation accuracy.  
+Also I tweek around the pre-processing parameters so that distinctive elements in the images appeared.  
+More importantly, modifying the LeNet5 architecture as described above increased the validation accuracy drastically.  
+
+
+
+
+
 
